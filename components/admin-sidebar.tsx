@@ -2,12 +2,11 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, Users, PoundSterling, BarChart3, Settings, Building2, ChevronRight, ChevronLeft } from "lucide-react"
+import { Building2, Users, PoundSterling, BarChart3, Settings, Home, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
-// Sidebar navigation items
 const sidebarItems = [
   {
     title: "Dashboard",

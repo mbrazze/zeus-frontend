@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -16,228 +15,171 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Shield,
-  Building2,
-  Calendar,
-  PoundSterling,
-  BarChart3,
-  Users,
-  AlertTriangle,
-  Save,
-  X,
-  User,
-  Crown,
-  UserCheck,
-} from "lucide-react"
-
-interface StaffUser {
-  id: string
-  name: string
-  email: string
-  phone: string
-  role: string
-  status: string
-  joinDate: string
-  lastLogin: string
-  assignedVenues: string[]
-  permissions: string[]
-  avatar: string
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Shield, Building2, Calendar, PoundSterling, BarChart3, Users, AlertTriangle, CheckCircle } from "lucide-react"
 
 interface RoleManagementModalProps {
-  user: StaffUser | null
+  user: any
   isOpen: boolean
   onClose: () => void
-  onSave: (user: StaffUser) => void
+  onSave: (userId: string, updatedData: any) => void
+  venues: string[]
 }
 
-// Mock venue data
-const mockVenues = {
-  "1": "Elite Conference Center",
-  "2": "Premier Sports Complex",
-  "3": "Grand Ballroom",
-  "4": "Tech Hub",
-  "5": "Creative Studio",
-}
-
-// Permission definitions
-const permissionCategories = [
-  {
-    id: "system_admin",
-    name: "System Administration",
-    icon: Shield,
-    color: "text-red-600",
-    permissions: [
-      { id: "full_access", name: "Full System Access", description: "Complete administrative control", critical: true },
-      { id: "user_management", name: "User Management", description: "Create, edit, and delete user accounts" },
-      { id: "system_settings", name: "System Settings", description: "Modify system configuration and preferences" },
-      {
-        id: "security_management",
-        name: "Security Management",
-        description: "Manage security settings and access controls",
-      },
-    ],
-  },
-  {
-    id: "venue_management",
-    name: "Venue Management",
-    icon: Building2,
-    color: "text-emerald-600",
-    permissions: [
-      { id: "venue_create", name: "Create Venues", description: "Add new venues to the system" },
-      { id: "venue_edit", name: "Edit Venues", description: "Modify venue details and settings" },
-      { id: "venue_delete", name: "Delete Venues", description: "Remove venues from the system" },
-      { id: "venue_pricing", name: "Venue Pricing", description: "Set and modify venue pricing" },
-    ],
-  },
-  {
-    id: "booking_management",
-    name: "Booking Management",
-    icon: Calendar,
-    color: "text-blue-600",
-    permissions: [
-      { id: "booking_create", name: "Create Bookings", description: "Make new venue reservations" },
-      { id: "booking_edit", name: "Edit Bookings", description: "Modify existing bookings" },
-      { id: "booking_cancel", name: "Cancel Bookings", description: "Cancel and refund bookings" },
-      { id: "booking_approve", name: "Approve Bookings", description: "Approve pending booking requests" },
-    ],
-  },
-  {
-    id: "financial_management",
-    name: "Financial Management",
-    icon: PoundSterling,
-    color: "text-amber-600",
-    permissions: [
-      { id: "invoice_create", name: "Create Invoices", description: "Generate invoices for bookings" },
-      { id: "invoice_edit", name: "Edit Invoices", description: "Modify invoice details" },
-      { id: "payment_process", name: "Process Payments", description: "Handle payment transactions" },
-      { id: "refund_process", name: "Process Refunds", description: "Issue refunds to customers" },
-    ],
-  },
-  {
-    id: "analytics_reporting",
-    name: "Analytics & Reporting",
-    icon: BarChart3,
-    color: "text-purple-600",
-    permissions: [
-      { id: "analytics_view", name: "View Analytics", description: "Access business analytics and insights" },
-      { id: "reports_generate", name: "Generate Reports", description: "Create and export business reports" },
-      { id: "data_export", name: "Export Data", description: "Export system data in various formats" },
-      { id: "dashboard_access", name: "Dashboard Access", description: "Access administrative dashboards" },
-    ],
-  },
-  {
-    id: "customer_management",
-    name: "Customer Management",
-    icon: Users,
-    color: "text-indigo-600",
-    permissions: [
-      { id: "customer_view", name: "View Customers", description: "Access customer information" },
-      { id: "customer_edit", name: "Edit Customers", description: "Modify customer details" },
-      { id: "customer_communication", name: "Customer Communication", description: "Send messages to customers" },
-      { id: "customer_support", name: "Customer Support", description: "Provide customer support services" },
-    ],
-  },
-]
-
-// Role templates
 const roleTemplates = {
   admin: {
     name: "Administrator",
     description: "Full system access with all permissions",
-    permissions: ["full_access"],
-    venues: ["all"],
-    icon: Crown,
-    color: "bg-purple-100 text-purple-800 border-purple-200",
+    permissions: {
+      systemAdmin: true,
+      venueManagement: true,
+      bookingManagement: true,
+      financialManagement: true,
+      analytics: true,
+      customerManagement: true,
+    },
+    assignedVenues: ["all"],
   },
-  venue_manager: {
+  manager: {
     name: "Venue Manager",
-    description: "Manage specific venues and their bookings",
-    permissions: [
-      "venue_edit",
-      "venue_pricing",
-      "booking_create",
-      "booking_edit",
-      "booking_cancel",
-      "booking_approve",
-      "invoice_create",
-      "analytics_view",
-      "customer_view",
-      "customer_communication",
-    ],
-    venues: [],
-    icon: Building2,
-    color: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    description: "Manage assigned venues and bookings",
+    permissions: {
+      systemAdmin: false,
+      venueManagement: true,
+      bookingManagement: true,
+      financialManagement: true,
+      analytics: true,
+      customerManagement: true,
+    },
+    assignedVenues: [],
   },
   staff: {
-    name: "Staff",
-    description: "Basic booking management for assigned venues",
-    permissions: ["booking_create", "booking_edit", "customer_view", "customer_communication"],
-    venues: [],
-    icon: UserCheck,
-    color: "bg-blue-100 text-blue-800 border-blue-200",
+    name: "Staff Member",
+    description: "Basic booking and customer management",
+    permissions: {
+      systemAdmin: false,
+      venueManagement: false,
+      bookingManagement: true,
+      financialManagement: false,
+      analytics: false,
+      customerManagement: true,
+    },
+    assignedVenues: [],
   },
 }
 
-export function RoleManagementModal({ user, isOpen, onClose, onSave }: RoleManagementModalProps) {
+const permissionCategories = [
+  {
+    id: "systemAdmin",
+    name: "System Administration",
+    description: "Full system access, user management, system settings",
+    icon: Shield,
+    critical: true,
+  },
+  {
+    id: "venueManagement",
+    name: "Venue Management",
+    description: "Create, edit, and manage venue spaces and settings",
+    icon: Building2,
+    critical: false,
+  },
+  {
+    id: "bookingManagement",
+    name: "Booking Management",
+    description: "View, create, edit, and manage all bookings",
+    icon: Calendar,
+    critical: false,
+  },
+  {
+    id: "financialManagement",
+    name: "Financial Management",
+    description: "Access to invoicing, payments, and financial reports",
+    icon: PoundSterling,
+    critical: false,
+  },
+  {
+    id: "analytics",
+    name: "Analytics & Reporting",
+    description: "View analytics, generate reports, and export data",
+    icon: BarChart3,
+    critical: false,
+  },
+  {
+    id: "customerManagement",
+    name: "Customer Management",
+    description: "View and manage customer accounts and information",
+    icon: Users,
+    critical: false,
+  },
+]
+
+export function RoleManagementModal({ user, isOpen, onClose, onSave, venues }: RoleManagementModalProps) {
   const [selectedRole, setSelectedRole] = useState<string>("")
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
-  const [selectedVenues, setSelectedVenues] = useState<string[]>([])
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [customRole, setCustomRole] = useState(false)
+  const [permissions, setPermissions] = useState<Record<string, boolean>>({})
+  const [assignedVenues, setAssignedVenues] = useState<string[]>([])
+  const [hasChanges, setHasChanges] = useState(false)
 
   useEffect(() => {
     if (user && isOpen) {
       setSelectedRole(user.role)
-      setSelectedPermissions([...user.permissions])
-      setSelectedVenues([...user.assignedVenues])
-      setHasUnsavedChanges(false)
+      setPermissions(user.permissions || {})
+      setAssignedVenues(user.assignedVenues || [])
+      setCustomRole(false)
+      setHasChanges(false)
     }
   }, [user, isOpen])
 
   const handleRoleChange = (role: string) => {
-    setSelectedRole(role)
-    if (role !== "custom") {
-      const template = roleTemplates[role as keyof typeof roleTemplates]
-      setSelectedPermissions([...template.permissions])
-      setSelectedVenues([...template.venues])
-    }
-    setHasUnsavedChanges(true)
-  }
-
-  const handlePermissionToggle = (permissionId: string) => {
-    const newPermissions = selectedPermissions.includes(permissionId)
-      ? selectedPermissions.filter((p) => p !== permissionId)
-      : [...selectedPermissions, permissionId]
-
-    setSelectedPermissions(newPermissions)
-    setHasUnsavedChanges(true)
-  }
-
-  const handleVenueToggle = (venueId: string) => {
-    if (venueId === "all") {
-      setSelectedVenues(selectedVenues.includes("all") ? [] : ["all"])
+    if (role === "custom") {
+      setCustomRole(true)
+      setSelectedRole("custom")
     } else {
-      const newVenues = selectedVenues.includes(venueId)
-        ? selectedVenues.filter((v) => v !== venueId && v !== "all")
-        : [...selectedVenues.filter((v) => v !== "all"), venueId]
-      setSelectedVenues(newVenues)
+      setCustomRole(false)
+      setSelectedRole(role)
+      const template = roleTemplates[role as keyof typeof roleTemplates]
+      if (template) {
+        setPermissions(template.permissions)
+        setAssignedVenues(template.assignedVenues)
+      }
     }
-    setHasUnsavedChanges(true)
+    setHasChanges(true)
+  }
+
+  const handlePermissionChange = (permissionId: string, checked: boolean) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [permissionId]: checked,
+    }))
+    setHasChanges(true)
+  }
+
+  const handleVenueChange = (venue: string, checked: boolean) => {
+    if (venue === "all") {
+      setAssignedVenues(checked ? ["all"] : [])
+    } else {
+      setAssignedVenues((prev) => {
+        const filtered = prev.filter((v) => v !== "all")
+        if (checked) {
+          return [...filtered, venue]
+        } else {
+          return filtered.filter((v) => v !== venue)
+        }
+      })
+    }
+    setHasChanges(true)
   }
 
   const handleSave = () => {
     if (!user) return
 
-    const updatedUser: StaffUser = {
-      ...user,
-      role: selectedRole,
-      permissions: selectedPermissions,
-      assignedVenues: selectedVenues,
+    const updatedData = {
+      role: customRole ? "custom" : selectedRole,
+      permissions,
+      assignedVenues,
     }
 
-    onSave(updatedUser)
-    setHasUnsavedChanges(false)
+    onSave(user.id, updatedData)
     onClose()
   }
 
@@ -245,29 +187,20 @@ export function RoleManagementModal({ user, isOpen, onClose, onSave }: RoleManag
     switch (role) {
       case "admin":
         return "bg-purple-100 text-purple-800 border-purple-200"
-      case "venue_manager":
+      case "manager":
         return "bg-emerald-100 text-emerald-800 border-emerald-200"
       case "staff":
         return "bg-blue-100 text-blue-800 border-blue-200"
+      case "custom":
+        return "bg-orange-100 text-orange-800 border-orange-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "inactive":
-        return "bg-gray-100 text-gray-800 border-gray-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-    }
+  const getPermissionCount = () => {
+    return Object.values(permissions).filter(Boolean).length
   }
-
-  const hasCriticalPermissions = selectedPermissions.some((p) =>
-    permissionCategories.some((cat) => cat.permissions.some((perm) => perm.id === p && perm.critical)),
-  )
 
   if (!user) return null
 
@@ -276,192 +209,277 @@ export function RoleManagementModal({ user, isOpen, onClose, onSave }: RoleManag
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <Shield className="w-5 h-5 text-primary-600" />
+            <Shield className="w-5 h-5" />
             <span>Role & Permissions Management</span>
           </DialogTitle>
-          <DialogDescription>Configure user role, permissions, and venue assignments for {user.name}</DialogDescription>
+          <DialogDescription>
+            Manage user roles, permissions, and venue access for {user.firstName} {user.lastName}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* User Information Card */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="bg-primary-100 text-primary-700 text-lg">
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-800">{user.name}</h3>
-                  <p className="text-sm text-slate-600">{user.email}</p>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Badge className={getRoleColor(user.role)}>
-                      {user.role === "venue_manager" ? "MANAGER" : user.role.toUpperCase()}
-                    </Badge>
-                    <Badge className={getStatusColor(user.status)}>{user.status.toUpperCase()}</Badge>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* User Info & Role Selection */}
+          <div className="space-y-6">
+            {/* User Profile Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">User Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                    <span className="text-primary-700 font-medium">
+                      {user.firstName.charAt(0)}
+                      {user.lastName.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-800">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-sm text-slate-500">{user.email}</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Role Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="w-4 h-4" />
-                <span>Role Assignment</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {Object.entries(roleTemplates).map(([key, template]) => {
-                  const Icon = template.icon
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Current Role:</span>
+                  <Badge className={`${getRoleColor(user.role)} border`}>
+                    {user.role === "manager" ? "MANAGER" : user.role.toUpperCase()}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Status:</span>
+                  <Badge
+                    className={`${user.status === "active" ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"} border`}
+                  >
+                    {user.status.toUpperCase()}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Role Selection */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Role Assignment</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <Label htmlFor="role-select">Select Role Template</Label>
+                  <Select value={selectedRole} onValueChange={handleRoleChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Administrator</SelectItem>
+                      <SelectItem value="manager">Venue Manager</SelectItem>
+                      <SelectItem value="staff">Staff Member</SelectItem>
+                      <SelectItem value="custom">Custom Role</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedRole && selectedRole !== "custom" && (
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="font-medium text-sm text-slate-800">
+                      {roleTemplates[selectedRole as keyof typeof roleTemplates]?.name}
+                    </p>
+                    <p className="text-xs text-slate-600 mt-1">
+                      {roleTemplates[selectedRole as keyof typeof roleTemplates]?.description}
+                    </p>
+                  </div>
+                )}
+
+                {customRole && (
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-600" />
+                      <p className="font-medium text-sm text-orange-800">Custom Role</p>
+                    </div>
+                    <p className="text-xs text-orange-700 mt-1">Configure custom permissions below</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Permission Summary */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Permission Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Active Permissions:</span>
+                  <Badge variant="outline">
+                    {getPermissionCount()} of {permissionCategories.length}
+                  </Badge>
+                </div>
+                {hasChanges && (
+                  <div className="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-4 h-4 text-blue-600" />
+                      <p className="text-xs text-blue-800">Unsaved changes</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Permissions */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Permissions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {permissionCategories.map((category) => {
+                  const Icon = category.icon
+                  const isChecked = permissions[category.id] || false
+
                   return (
-                    <div
-                      key={key}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedRole === key
-                          ? "border-primary-500 bg-primary-50"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                      onClick={() => handleRoleChange(key)}
-                    >
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Icon className="w-5 h-5 text-slate-600" />
-                        <span className="font-medium text-slate-800">{template.name}</span>
+                    <div key={category.id} className="space-y-2">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id={category.id}
+                          checked={isChecked}
+                          onCheckedChange={(checked) => handlePermissionChange(category.id, checked as boolean)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <Icon className="w-4 h-4 text-slate-600" />
+                            <Label htmlFor={category.id} className="text-sm font-medium cursor-pointer">
+                              {category.name}
+                            </Label>
+                            {category.critical && (
+                              <Badge variant="destructive" className="text-xs">
+                                Critical
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">{category.description}</p>
+                          {category.critical && isChecked && (
+                            <div className="flex items-center space-x-1 mt-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-500" />
+                              <p className="text-xs text-amber-700">This permission grants sensitive system access</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-slate-600">{template.description}</p>
+                      {category.id !== permissionCategories[permissionCategories.length - 1].id && (
+                        <Separator className="my-3" />
+                      )}
                     </div>
                   )
                 })}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Venue Assignment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Building2 className="w-4 h-4" />
-                <span>Venue Assignment</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="all-venues"
-                  checked={selectedVenues.includes("all")}
-                  onCheckedChange={() => handleVenueToggle("all")}
-                />
-                <Label htmlFor="all-venues" className="font-medium">
-                  All Venues (Full Access)
-                </Label>
-              </div>
+          {/* Venue Access */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">Venue Access</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="all-venues"
+                      checked={assignedVenues.includes("all")}
+                      onCheckedChange={(checked) => handleVenueChange("all", checked as boolean)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="all-venues" className="text-sm font-medium cursor-pointer">
+                        All Venues
+                      </Label>
+                      <p className="text-xs text-slate-600">Grant access to all current and future venues</p>
+                    </div>
+                  </div>
 
-              {!selectedVenues.includes("all") && (
-                <>
                   <Separator />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.entries(mockVenues).map(([id, name]) => (
-                      <div key={id} className="flex items-center space-x-2">
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Individual Venues</Label>
+                    {venues.map((venue) => (
+                      <div key={venue} className="flex items-start space-x-3">
                         <Checkbox
-                          id={`venue-${id}`}
-                          checked={selectedVenues.includes(id)}
-                          onCheckedChange={() => handleVenueToggle(id)}
+                          id={venue}
+                          checked={assignedVenues.includes(venue) && !assignedVenues.includes("all")}
+                          onCheckedChange={(checked) => handleVenueChange(venue, checked as boolean)}
+                          disabled={assignedVenues.includes("all")}
+                          className="mt-1"
                         />
-                        <Label htmlFor={`venue-${id}`} className="text-sm">
-                          {name}
-                        </Label>
+                        <div className="flex-1">
+                          <Label
+                            htmlFor={venue}
+                            className={`text-sm cursor-pointer ${
+                              assignedVenues.includes("all") ? "text-slate-400" : ""
+                            }`}
+                          >
+                            {venue}
+                          </Label>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Permissions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Shield className="w-4 h-4" />
-                <span>Permissions</span>
-                <Badge variant="outline" className="ml-2">
-                  {selectedPermissions.length} selected
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {hasCriticalPermissions && (
-                <div className="flex items-center space-x-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span className="text-sm text-amber-800">
-                    This user has critical system permissions. Please review carefully.
-                  </span>
                 </div>
-              )}
+              </CardContent>
+            </Card>
 
-              {permissionCategories.map((category) => {
-                const Icon = category.icon
-                const categoryPermissions = category.permissions.filter((p) => selectedPermissions.includes(p.id))
-
-                return (
-                  <div key={category.id} className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Icon className={`w-4 h-4 ${category.color}`} />
-                      <span className="font-medium text-slate-800">{category.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {categoryPermissions.length}/{category.permissions.length}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
-                      {category.permissions.map((permission) => (
-                        <div key={permission.id} className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              id={permission.id}
-                              checked={selectedPermissions.includes(permission.id)}
-                              onCheckedChange={() => handlePermissionToggle(permission.id)}
-                            />
-                            <Label htmlFor={permission.id} className="text-sm font-medium">
-                              {permission.name}
-                              {permission.critical && <AlertTriangle className="w-3 h-3 text-red-500 inline ml-1" />}
-                            </Label>
-                          </div>
-                          <p className="text-xs text-slate-500 ml-6">{permission.description}</p>
-                        </div>
-                      ))}
-                    </div>
+            {/* Preview Changes */}
+            {hasChanges && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-blue-800 flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Preview Changes</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-blue-700">New Role:</span>
+                    <Badge className={`${getRoleColor(customRole ? "custom" : selectedRole)} border`}>
+                      {customRole ? "CUSTOM" : selectedRole === "manager" ? "MANAGER" : selectedRole.toUpperCase()}
+                    </Badge>
                   </div>
-                )
-              })}
-            </CardContent>
-          </Card>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-blue-700">Permissions:</span>
+                    <span className="text-sm font-medium text-blue-800">{getPermissionCount()} active</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-blue-700">Venue Access:</span>
+                    <span className="text-sm font-medium text-blue-800">
+                      {assignedVenues.includes("all") ? "All Venues" : `${assignedVenues.length} venues`}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
 
         <DialogFooter className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {hasUnsavedChanges && (
+            {permissions.systemAdmin && (
               <div className="flex items-center space-x-1 text-amber-600">
-                <AlertTriangle className="w-3 h-3" />
-                <span className="text-xs">Unsaved changes</span>
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-xs">Critical permissions enabled</span>
               </div>
             )}
           </div>
-          <div className="flex space-x-2">
+
+          <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={onClose}>
-              <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={!hasUnsavedChanges}>
-              <Save className="w-4 h-4 mr-2" />
+            <Button onClick={handleSave} disabled={!hasChanges} className="zeus-gradient text-white hover:opacity-90">
               Save Changes
             </Button>
           </div>

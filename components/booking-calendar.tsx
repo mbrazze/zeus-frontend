@@ -14,6 +14,7 @@ interface BookingCalendarProps {
 }
 
 const timeSlots = [
+  "08:00",
   "09:00",
   "10:00",
   "11:00",
@@ -26,6 +27,9 @@ const timeSlots = [
   "18:00",
   "19:00",
   "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
 ]
 
 // Mock booking data - in real app this would come from API
