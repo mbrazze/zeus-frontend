@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 
 type TabType = "admin" | "customer" | "forgot"
 
@@ -18,7 +17,6 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<TabType>("customer")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
   // Admin login state
   const [adminForm, setAdminForm] = useState({
@@ -49,52 +47,49 @@ export default function LoginPage() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
   const [resetEmailSent, setResetEmailSent] = useState(false)
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log("Admin login:", adminForm.email)
-    router.push("/admin")
-    setIsLoading(false)
+    // Mock admin login
+    if (adminForm.email && adminForm.password) {
+      router.push("/admin")
+    }
   }
 
-  const handleCustomerLogin = async (e: React.FormEvent) => {
+  const handleCustomerLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log("Customer login:", customerLoginForm.email)
-    router.push("/dashboard")
-    setIsLoading(false)
+    // Mock customer login
+    if (customerLoginForm.email && customerLoginForm.password) {
+      router.push("/dashboard")
+    }
   }
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-
     if (registerForm.password !== registerForm.confirmPassword) {
       alert("Passwords don't match!")
-      setIsLoading(false)
       return
     }
-
     if (!registerForm.agreeToTerms) {
       alert("Please agree to the terms and conditions")
-      setIsLoading(false)
       return
     }
-
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log("Registration:", registerForm.email)
-    router.push("/dashboard")
-    setIsLoading(false)
+    // Mock registration - just switch to login view
+    setCustomerView("login")
+    setRegisterForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      agreeToTerms: false,
+    })
   }
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    // Mock forgot password
     setResetEmailSent(true)
-    setIsLoading(false)
   }
 
   return (
@@ -109,14 +104,13 @@ export default function LoginPage() {
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center justify-between text-white w-full">
             {/* Top Label */}
-            <div className="w-full flex justify-center mb-16">
-            </div>
+            <div className="w-full flex justify-center mb-16"></div>
 
             {/* Zeus Logo and Content */}
             <div className="flex-1 flex flex-col items-center justify-center space-y-8">
               {/* Zeus Logo */}
               <div className="bg-white/10 backdrop-blur-md rounded-3xl p-12 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]">
-              <p className= "text-7xl font-bold tracking-tight drop-shadow-lg">Z</p>
+                <p className="text-7xl font-bold tracking-tight drop-shadow-lg">Z</p>
               </div>
 
               {/* Zeus Text */}
@@ -155,7 +149,7 @@ export default function LoginPage() {
             {/* Logo (Mobile) */}
             <div className="lg:hidden flex flex-col items-center mb-8 space-y-4">
               <div className="bg-white/20 backdrop-blur-md rounded-2xl p-8 border border-white/30 shadow-lg">
-                <Image src="/zeus-logo-large.png" alt="Zeus Logo" width={80} height={80} className="drop-shadow-lg" />
+                <p className="text-5xl font-bold text-white drop-shadow-lg">Z</p>
               </div>
               <h1 className="text-4xl font-bold text-white drop-shadow-lg">Zeus</h1>
               <p className="text-sm text-white/90 text-center drop-shadow-md">Event Management Platform</p>
@@ -278,9 +272,8 @@ export default function LoginPage() {
                     <Button
                       type="submit"
                       className="w-full h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-base font-semibold mt-6 shadow-lg"
-                      disabled={isLoading}
                     >
-                      {isLoading ? "Signing in..." : "Sign In"}
+                      Sign In
                     </Button>
                   </form>
                 </div>
@@ -377,9 +370,8 @@ export default function LoginPage() {
                       <Button
                         type="submit"
                         className="w-full h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-base font-semibold mt-6 shadow-lg"
-                        disabled={isLoading}
                       >
-                        {isLoading ? "Signing in..." : "Sign In"}
+                        Sign In
                       </Button>
 
                       <div className="text-center pt-4">
@@ -540,9 +532,8 @@ export default function LoginPage() {
                       <Button
                         type="submit"
                         className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-base font-semibold shadow-lg"
-                        disabled={isLoading}
                       >
-                        {isLoading ? "Creating account..." : "Create Account"}
+                        Create Account
                       </Button>
 
                       <div className="text-center pt-4">
@@ -591,9 +582,8 @@ export default function LoginPage() {
                       <Button
                         type="submit"
                         className="w-full h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-base font-semibold mt-6 shadow-lg"
-                        disabled={isLoading}
                       >
-                        {isLoading ? "Sending..." : "Send Reset Link"}
+                        Send Reset Link
                       </Button>
 
                       <div className="text-center pt-4">

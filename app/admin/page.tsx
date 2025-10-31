@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Building2,
   CalendarIcon,
@@ -880,109 +881,131 @@ export default function AdminDashboard() {
 
               <Card className="zeus-card">
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Venue & Space</TableHead>
-                        <TableHead>Date & Time</TableHead>
-                        <TableHead>Classification</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredBookings.map(([id, booking]) => (
-                        <TableRow key={id} className="hover:bg-slate-50">
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-slate-800">{booking.customer.name}</p>
-                              <p className="text-sm text-slate-500">{booking.customer.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-slate-800">{booking.venue}</p>
-                              <p className="text-sm text-slate-500">{booking.space}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-slate-800">
-                                {new Date(booking.date).toLocaleDateString()}
-                              </p>
-                              <p className="text-sm text-slate-500">{booking.time}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <Badge variant="outline" className="text-xs">
-                                {booking.classification?.category}
-                              </Badge>
-                              <div className="flex gap-1">
-                                <Badge variant="secondary" className="text-xs">
-                                  {booking.classification?.ageGroup}
+                  <TooltipProvider>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Venue & Space</TableHead>
+                          <TableHead>Date & Time</TableHead>
+                          <TableHead>Classification</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredBookings.map(([id, booking]) => {
+                          const categoryText = booking.classification?.category || ""
+                          const truncatedCategory =
+                            categoryText.length > 12 ? `${categoryText.substring(0, 12)}...` : categoryText
+                          const needsTooltip = categoryText.length > 12
+
+                          return (
+                            <TableRow key={id} className="hover:bg-slate-50">
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-slate-800">{booking.customer.name}</p>
+                                  <p className="text-sm text-slate-500">{booking.customer.email}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-slate-800">{booking.venue}</p>
+                                  <p className="text-sm text-slate-500">{booking.space}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-slate-800">
+                                    {new Date(booking.date).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-sm text-slate-500">{booking.time}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  {needsTooltip ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Badge variant="outline" className="text-xs cursor-help">
+                                          {truncatedCategory}
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="max-w-xs">{categoryText}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs">
+                                      {categoryText}
+                                    </Badge>
+                                  )}
+                                  <div className="flex gap-1">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {booking.classification?.ageGroup}
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {booking.classification?.matchType}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-medium text-slate-800">£{booking.amount}</p>
+                                <p className="text-xs text-slate-500">
+                                  {booking.duration}h @ £{booking.hourlyRate}/h
+                                </p>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={`${getStatusColor(booking.status)} flex items-center w-fit`}>
+                                  {getStatusIcon(booking.status)}
+                                  <span className="ml-1 capitalize">{booking.status.replace("_", " ")}</span>
                                 </Badge>
-                                <Badge variant="secondary" className="text-xs">
-                                  {booking.classification?.matchType}
-                                </Badge>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <p className="font-medium text-slate-800">£{booking.amount}</p>
-                            <p className="text-xs text-slate-500">
-                              {booking.duration}h @ £{booking.hourlyRate}/h
-                            </p>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`${getStatusColor(booking.status)} flex items-center w-fit`}>
-                              {getStatusIcon(booking.status)}
-                              <span className="ml-1 capitalize">{booking.status.replace("_", " ")}</span>
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedBooking({ id, ...booking })
-                                  setIsBookingModalOpen(true)
-                                }}
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              {booking.status === "pending" && (
-                                <>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-1">
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-green-600 border-green-200 hover:bg-green-50 bg-transparent"
-                                    onClick={() => handleStatusChange(id, "confirmed")}
-                                  >
-                                    <CheckCircle className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
                                     onClick={() => {
                                       setSelectedBooking({ id, ...booking })
-                                      setIsDeclineModalOpen(true)
+                                      setIsBookingModalOpen(true)
                                     }}
                                   >
-                                    <XCircle className="w-4 h-4" />
+                                    <Eye className="w-4 h-4" />
                                   </Button>
-                                </>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                                  {booking.status === "pending" && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-green-600 border-green-200 hover:bg-green-50 bg-transparent"
+                                        onClick={() => handleStatusChange(id, "confirmed")}
+                                      >
+                                        <CheckCircle className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
+                                        onClick={() => {
+                                          setSelectedBooking({ id, ...booking })
+                                          setIsDeclineModalOpen(true)
+                                        }}
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TooltipProvider>
                 </CardContent>
               </Card>
 
